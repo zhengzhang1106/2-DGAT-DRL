@@ -86,18 +86,18 @@ class AuGraphModel(TorchModelV2, nn.Module):
         self.logits_layer = None
         self.value_layer = None
         self._value_out = None
-        if num_outputs:
-            self.logits_layer = SlimFC(
-                in_size=out_size,
-                out_size=num_outputs,
-                activation_fn=None,
-            )
-            # Create the value branch model.
-            self.value_layer = SlimFC(
-                in_size=out_size,
-                out_size=1,
-                activation_fn=None,
-                initializer=normc_initializer(0.01))  # 正态分布初始化
+        # if num_outputs:
+        #     self.logits_layer = SlimFC(
+        #         in_size=out_size,
+        #         out_size=num_outputs,
+        #         activation_fn=None,
+        #     )
+        #     # Create the value branch model.
+        #     self.value_layer = SlimFC(
+        #         in_size=out_size,
+        #         out_size=1,
+        #         activation_fn=None,
+        #         initializer=normc_initializer(0.01))  # 正态分布初始化
 
     @override(ModelV2)  # 子类覆写父类函数
     def forward(self, input_dict, state, seq_lens):
@@ -143,14 +143,15 @@ class AuGraphModel(TorchModelV2, nn.Module):
         out = self._hidden(out_add)
         self._last_embedding = out  # 这行是给 ICM 用的 embedding
 
-        if not self.logits_layer is None:
-            logits, values = self.logits_layer(out), self.value_layer(out)
-            # print(logits.shape)
-            self._value_out = torch.reshape(values, [-1])  # 表示将矩阵形式的value展平
-            # return logits + inf_mask, []
-            return logits, []
-        else:
-            return out, []
+        # if not self.logits_layer is None:
+        #     logits, values = self.logits_layer(out), self.value_layer(out)
+        #     # print(logits.shape)
+        #     self._value_out = torch.reshape(values, [-1])  # 表示将矩阵形式的value展平
+        #     # return logits + inf_mask, []
+        #     return logits, []
+        # else:
+        #     return out, []
+        return out, []
 
     @override(ModelV2)
     def value_function(self):
