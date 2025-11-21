@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="polimi">
+    <serverData>
+      <paths name="polimi">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/2-DGAT-DRL" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="zz">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/ADMIRE+/minLP/2-GATv2_DQN_only" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>
