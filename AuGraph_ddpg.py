@@ -3,14 +3,11 @@ import random
 import torch
 from ray import tune
 import ray
-
 from AuGraph_env import AuGraphEnv
-from AuGraph_model import AuGraphModel
+from AuGraph_model_LineGraph import AuGraphModel
 from ray.rllib.agents.ddpg import DDPGTrainer
 from ray.rllib.models.catalog import ModelCatalog
-import os
 
-## 设置随机种子
 seed_num = 0
 np.random.seed(seed_num)
 random.seed(seed_num)
@@ -68,14 +65,14 @@ tunerun = tune.run(
         # Postprocess the policy network model output with these hidden layers. If
         # use_state_preprocessor is False, then these will be the *only* hidden
         # layers in the network.
-        "actor_hiddens": [256, 128],
+        "actor_hiddens": [128, 64],
         # Hidden layers activation of the postprocessing stage of the policy
         # network
         "actor_hidden_activation": "relu",
         # Postprocess the critic network model output with these hidden layers;
         # again, if use_state_preprocessor is True, then the state will be
         # preprocessed by the model specified with the "model" config option first.
-        "critic_hiddens": [256, 128],
+        "critic_hiddens": [128, 64],
         # Hidden layers activation of the postprocessing state of the critic.
         "critic_hidden_activation": "relu",
         # N-step Q learning
@@ -83,8 +80,10 @@ tunerun = tune.run(
         # 自定义模型
         'model': {
             'custom_model': 'augraph_model',
-            "post_fcnet_hiddens": [256, 128],
-            "post_fcnet_activation": 'relu',  # tune.grid_search(['relu','tanh'])
+            "post_fcnet_hiddens": [256],
+            "post_fcnet_activation": 'relu',
+            "fcnet_hiddens": [512],
+            "fcnet_activation": 'relu',
         },
 
         # === Exploration ===
@@ -95,10 +94,9 @@ tunerun = tune.run(
             "type": "GaussianNoise",
             # For how many timesteps should we return completely random actions,
             # before we start adding (scaled) noise?
-            "random_timesteps": 5000,
-            # "random_timesteps": 10000,
+            "random_timesteps": 10000,
             # Gaussian stddev of action noise for exploration.
-            "stddev": 0.1,  # tune.grid_search([0.1, 0.15]),
+            "stddev": 0.05,
             # Scaling settings by which the Gaussian noise is scaled before
             # being added to the actions. NOTE: The scale timesteps start only
             # after(!) any random steps have been finished.
@@ -117,7 +115,7 @@ tunerun = tune.run(
         # === Replay buffer ===
         # Size of the replay buffer. Note that if async_updates is set, then
         # each worker will have a replay buffer of this size.
-        "buffer_size": 20000,
+        "buffer_size": 50000,
         "replay_buffer_config": {
             "type": "MultiAgentReplayBuffer",
             "capacity": 50000,
@@ -161,11 +159,11 @@ tunerun = tune.run(
         # Learning rate for the critic (Q-function) optimizer.
         "critic_lr": 1e-4,
         # Learning rate for the actor (policy) optimizer.
-        "actor_lr": 1e-4,
+        "actor_lr": 1e-5,
         # Update the target network every `target_network_update_freq` steps.
-        "target_network_update_freq": 0,
+        "target_network_update_freq": 2000,
         # Update the target by \tau * policy + (1-\tau) * target_policy
-        "tau": 0.002,
+        "tau": 0.001,
         # If True, use huber loss instead of squared loss for critic network
         # Conventionally, no need to clip gradients if using a huber loss
         "use_huber": False,
@@ -176,10 +174,10 @@ tunerun = tune.run(
         # If not None, clip gradients during optimization at this value
         "grad_clip": None,
         # How many steps of the model to sample before learning starts.
-        "learning_starts": 1500,
+        "learning_starts": 5000,
         # Update the replay buffer with this many samples at once. Note that this
         # setting applies per-worker if num_workers > 1.
-        "rollout_fragment_length": 1,
+        "rollout_fragment_length": 10,
         # Size of a batched sampled from replay buffer for training. Note that
         # if async_updates is set, then each worker returns gradients for a
         # batch of this size.
@@ -205,10 +203,9 @@ tunerun = tune.run(
     # 隔几个training_iteration存储一次
     # restore=path #载入检查点
     stop={
-        'training_iteration': 150  # 训练轮次
+        'training_iteration': 200  # 训练轮次
     }
 )
-
 
 # 保存一个最大的训练好的agent
 best_checkpoint = tunerun.get_best_checkpoint(

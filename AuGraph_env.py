@@ -1,13 +1,11 @@
 import gym
 from gym.spaces import Box
 from gym.spaces import Dict
-from gym.spaces import Discrete
 import numpy as np
 import Database
 import RWA
 import Service
 import AuGraph
-import Compute
 
 
 class AuGraphEnv(gym.Env):
@@ -24,7 +22,7 @@ class AuGraphEnv(gym.Env):
 
         self.observation_space = Dict({
             # 各边间的剩余容量
-            'phylink': Box(low=-1*np.ones([2 *Database.link_number, Database.wavelength_number * Database.time]),
+            'phylink': Box(low=-1*np.ones([2 * Database.link_number, Database.wavelength_number * Database.time]),
                            high=Database.wavelength_capacity*np.ones([2 * Database.link_number, Database.wavelength_number * Database.time]), dtype=np.float32),
             # 业务id,[0]
             'request_index': Box(low=np.array([0]), high=np.array([Database.job_number-1]), shape=(1,), dtype=np.int32),
@@ -98,12 +96,12 @@ class AuGraphEnv(gym.Env):
                 'request_dest': [request_dest],
                 'request_traffic': request_traffic
             }
-            reward = lightpath_num * 50 * (-1)
+            reward = lightpath_num * (-1) * 50
             AuGraphEnv.lightpath_cumulate += lightpath_num
             print('id', request_index_current, 'weight', action_t, "lightpath_cum", AuGraphEnv.lightpath_cumulate,
                   "lightpath_cur", lightpath_num, "reward", reward)
 
-        else:  # 选路失败不更新物理网络状态和业务
+        else:
             if request_index_current == Database.job_number - 1:  # 所有业务都部署完成，结束此次迭代
                 self.done = True
                 request_index = request_index_current
@@ -125,7 +123,6 @@ class AuGraphEnv(gym.Env):
         AuGraphEnv.au_edge_list = au_edge_collection
         return self.observation, reward, self.done, {}  # 最后的return全返回了，如果没到最左边或者最右边，self.done=False
 
-
     def render(self, mode='human'):
         pass
 
@@ -138,13 +135,6 @@ class AuGraphEnv(gym.Env):
 
     def linkmsg(self, links_physical):
         linkmsg = []
-        row, col = Database.graph_connect.shape
-        for i in range(row):
-            for j in range(col):
-                if Database.graph_connect[i][j] == 1:
-                    linkmsg.append(links_physical[:, i, j].tolist())
-        return linkmsg   # 正常应该是(24, 72)维的列表
-
-
-if __name__=="__main__":
-    print("====================",Discrete(Database.action_total.shape[0]).n)
+        for i, j in zip(Database.u, Database.v):
+            linkmsg.append(links_physical[:, i, j].tolist())
+        return linkmsg  # (24, 72) 的 list

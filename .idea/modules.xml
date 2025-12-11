@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/GATv2_DQN_only.iml" filepath="$PROJECT_DIR$/.idea/GATv2_DQN_only.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/2-DGAT-DRL.iml" filepath="$PROJECT_DIR$/.idea/2-DGAT-DRL.iml" />
     </modules>
   </component>
 </project>

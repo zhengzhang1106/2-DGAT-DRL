@@ -1,13 +1,11 @@
 import gym
 from gym.spaces import Box
 from gym.spaces import Dict
-from gym.spaces import Discrete
 import numpy as np
 import Database
 import RWA
 import Service
 import AuGraph
-import Compute
 
 
 # 解决路由失败的问题所写的新环境
@@ -21,10 +19,8 @@ class AuGraphEnvRestore(gym.Env):
 
     # 初始化
     def __init__(self, env_config):
-        # gym.spaces.Box是连续取值
-        # self.action_space = gym.spaces.Box(low=0, high=255, shape=(1,5), dtype=int)  # 5个连续动作空间，0-255，以5增长
-        # self.action_space = Discrete(256)
-        self.action_space = Discrete(Database.action_total.shape[0])
+        self.action_space = Box(low=np.zeros(5), high=Database.weight_max * np.ones(5), dtype=np.int32)
+
         self.observation_space = Dict({
             'phylink': Box(low=-1*np.ones([2 *Database.link_number, Database.wavelength_number * Database.time]),
                            high=Database.wavelength_capacity*np.ones([2 * Database.link_number, Database.wavelength_number * Database.time]), dtype=np.float32),
@@ -49,7 +45,7 @@ class AuGraphEnvRestore(gym.Env):
         :return: 返回环境初始化状态
         """
         print("reset")
-        Service.generate_service(0,Database.time)  # 产生业务
+        Service.generate_service(0, Database.time)  # 产生业务
         Database.clear(Database.links_physical)  # 清空物理链路
         AuGraph.links_virtual_list.clear()      # 清空虚拟链路
         index = 0
@@ -70,7 +66,6 @@ class AuGraphEnvRestore(gym.Env):
         return self.observation
 
 
-    # 步骤，更新环境，设置奖励
     # 所选动作作用于环境后环境返回的奖励和下一步状态，并判断是否达到终止状态
     # :param action:输入是动作的序号
     # :return:输出是：下一步状态，立即回报，是否终止，调试项
@@ -78,8 +73,7 @@ class AuGraphEnvRestore(gym.Env):
         self.step_num += 1  # step数量加1
         # print('step_num', self.step_num)
         # print("action", action)
-        # action_t = action * 1000     # 对输出的动作取绝对值
-        action_t = Database.action_total[action]
+        action_t = action * 1000     # 对输出的动作取绝对值
         # print("action_new", action_t)
         request_index_current = self.observation['request_index'][0]  # 当前业务索引
         # print("index",request_index_current)
@@ -107,7 +101,7 @@ class AuGraphEnvRestore(gym.Env):
                 'request_dest': [request_dest],
                 'request_traffic': request_traffic
             }
-            reward = lightpath_num * 50 * (-1)  # 新增加波长的负值，有博客说reward在0-1之间比较好，
+            reward = lightpath_num * (-1) * 50  # 新增加波长的负值，有博客说reward在0-1之间比较好，
             AuGraphEnvRestore.lightpath_cumulate += lightpath_num
             print('id', request_index_current, 'weight', action_t, "lightpath_cum",
                   AuGraphEnvRestore.lightpath_cumulate, "lightpath_cur", lightpath_num, "reward", reward)
@@ -133,7 +127,6 @@ class AuGraphEnvRestore(gym.Env):
 
         AuGraphEnvRestore.au_edge_list = au_edge_collection
         return self.observation, reward, self.done, {}  # 最后的return全返回了，如果没到最左边或者最右边，self.done=False
-
 
     def render(self, mode='human'):
         pass

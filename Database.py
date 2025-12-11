@@ -77,15 +77,27 @@ graph_connect = np.array([[0, 1, 1, 0, 1, 0, 0, 0, 0],
                           [0, 0, 0, 0, 1, 0, 0, 0, 1],
                           [0, 0, 0, 0, 0, 1, 1, 1, 0]], dtype=int)
 
+R, C = graph_connect.shape
+u, v = [], []
+for i in range(R):
+    for j in range(C):
+        if graph_connect[i][j] == 1:
+            u.append(i)
+            v.append(j)
+
+def get_directed_edge_list():
+    edges = []
+    row, col = graph_connect.shape
+    for i in range(row):
+        for j in range(col):
+            if graph_connect[i][j] == 1:
+                edges.append((i, j))
+    return edges
+
+
 # 物理链路及波长，考虑24小时，所以是72*9*9
 links_physical = np.zeros((time*wavelength_number, node_number, node_number))
-
-
-# wave = links_physical.shape[0]  # 维度
-# row = links_physical.shape[1]  # 行
-# col = links_physical.shape[2]  # 列
 wave, row, col = links_physical.shape
-# print('wave',wave)
 for i in range(row):
     for j in range(col):
         if graph_connect[i][j] == 1:
@@ -94,9 +106,6 @@ for i in range(row):
         else:
             for k in range(wave):
                 links_physical[k][i][j] = -1.
-
-
-# print(links_physical)
 
 
 def clear(links):
