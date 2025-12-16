@@ -79,7 +79,7 @@ config_re = {
     # 自定义模型
     'model': {
         'custom_model': 'augraph_model',
-        "post_fcnet_hiddens": [256],
+        "post_fcnet_hiddens": [256, 256],
         "post_fcnet_activation": 'relu',
         "fcnet_hiddens": [512],
         "fcnet_activation": 'relu',

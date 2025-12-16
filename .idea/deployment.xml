@@ -5,7 +5,7 @@
       <paths name="polimi">
         <serverdata>
           <mappings>
-            <mapping deploy="/2-DGAT-DRL" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/zheng/2-DGAT-DRL" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

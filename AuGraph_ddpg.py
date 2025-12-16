@@ -21,7 +21,7 @@ ray.init()
 ModelCatalog.register_custom_model('augraph_model', AuGraphModel)  # 使用自定义模型
 tunerun = tune.run(
     DDPGTrainer,
-    # 填写ddpg的相关参数，可以搜索某些参数，比如学习率，奖励gamma等
+    local_dir="./zheng/2-DGAT_DRL",
     config={
         # 其他
         'env': AuGraphEnv,
@@ -80,7 +80,7 @@ tunerun = tune.run(
         # 自定义模型
         'model': {
             'custom_model': 'augraph_model',
-            "post_fcnet_hiddens": [256],
+            "post_fcnet_hiddens": [256, 256],
             "post_fcnet_activation": 'relu',
             "fcnet_hiddens": [512],
             "fcnet_activation": 'relu',
@@ -94,7 +94,7 @@ tunerun = tune.run(
             "type": "GaussianNoise",
             # For how many timesteps should we return completely random actions,
             # before we start adding (scaled) noise?
-            "random_timesteps": 10000,
+            "random_timesteps": 5000,
             # Gaussian stddev of action noise for exploration.
             "stddev": 0.05,
             # Scaling settings by which the Gaussian noise is scaled before
@@ -106,7 +106,7 @@ tunerun = tune.run(
             "scale_timesteps": 1,
         },
         # Number of env steps to optimize for before returning
-        'timesteps_per_iteration': 100,  # 每次迭代step数量
+        'timesteps_per_iteration': 500,  # 每次迭代step数量
         # Extra configuration that disables exploration.
         "evaluation_config": {
             "explore": False
@@ -157,9 +157,9 @@ tunerun = tune.run(
 
         # === Optimization ===
         # Learning rate for the critic (Q-function) optimizer.
-        "critic_lr": 1e-4,
+        "critic_lr": 3e-4,
         # Learning rate for the actor (policy) optimizer.
-        "actor_lr": 1e-5,
+        "actor_lr": 3e-4,
         # Update the target network every `target_network_update_freq` steps.
         "target_network_update_freq": 2000,
         # Update the target by \tau * policy + (1-\tau) * target_policy
@@ -174,7 +174,7 @@ tunerun = tune.run(
         # If not None, clip gradients during optimization at this value
         "grad_clip": None,
         # How many steps of the model to sample before learning starts.
-        "learning_starts": 5000,
+        "learning_starts": 4000,
         # Update the replay buffer with this many samples at once. Note that this
         # setting applies per-worker if num_workers > 1.
         "rollout_fragment_length": 10,
